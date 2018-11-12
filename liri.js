@@ -3,9 +3,9 @@
 require("dotenv").config();
 
 // Take user command and input and store as variables
-    const command = process.argv[2]
+    var command = process.argv[2]
     // Allows for spaces in input
-    const input = process.argv.slice(3).join(" ")
+    var input = process.argv.slice(3).join(" ")
 
 
 
@@ -23,29 +23,39 @@ var moment = require('moment');
     
     var spotify = new Spotify(keys.spotify);
 
+
+
+
+
 // Switch case for taking in user input and outputting proper function (( listed below this ))
-switch (command) {
+var picky = function annoyingWorkAround(arg1, arg2){
+switch (arg1) {
     case 'spotify-this-song':
-            spotThat();
+            spotThat(arg2);
         break;
     case 'concert-this':
-            concertMeOneMoreTime();
+            concertMeOneMoreTime(arg2);
         break;
     case 'movie-this':
-            movieTime();
+            movieTime(arg2);
         break;
 
     case 'do-what-it-says':
-
+            doSomethingRandom();
         break;
 
     default:
+            console.log("LIRI DOESN'T DO THAT")
         break;
 }
+}
+
+
+
 
 // Function for Spotify
-    function spotThat(){
-        spotify.search({ type: 'track', query: input, limit: 3 }, function(err, data) {
+    function spotThat(cb){
+        spotify.search({ type: 'track', query: cb, limit: 3 }, function(err, data) {
             if (err) {
               return console.log('Spotify Error occurred: ' + err);
                      }
@@ -60,17 +70,28 @@ switch (command) {
         });
     }
 // Function for Bands in Town
-    function concertMeOneMoreTime(){
-            let searchURL = "https://rest.bandsintown.com/artists/" + input + "/events?app_id=codingbootcamp"
+    function concertMeOneMoreTime(cb){
+            let searchURL = "https://rest.bandsintown.com/artists/" + cb + "/events?app_id=codingbootcamp"
 
             request(searchURL, function(error, response, data){
                 if (!error && response.statusCode === 200) {
 
-                    console.log(JSON.parse(data)[0].datetime);
-                    console.log(moment(JSON.parse(data)[0].datetime).toObject();)
-                    // for(let i =0; i < data.length; i++){
-                    //     console.log(data)[i]
-                    // }
+                let arrayOfShows =   JSON.parse(data);
+                    for(let x = 0; x < arrayOfShows.length; x++){
+                        
+                        // Reformat date using moment
+                        let mmddyyyy = moment(JSON.parse(data)[x].datetime).toObject();
+                        
+                        console.log("Venue: ", arrayOfShows[x].venue.name);
+                        console.log("Location: ", arrayOfShows[x].venue.city, ", ", arrayOfShows[x].venue.country);
+                        console.log("Date (MM-DD-YYYY): " ,mmddyyyy.months,'-',mmddyyyy.date,'-',mmddyyyy.years, "\n");
+
+
+
+
+
+                        
+                    }
 
                 }
 
@@ -92,19 +113,11 @@ switch (command) {
 
 
 
-
-
-
-
-
-
-
-
  // Function for OMDB
-function movieTime(){
+function movieTime(cb){
     if(input)   {  
         
-        let queryUrl = "http://www.omdbapi.com/?t=" + input + "&y=&plot=short&apikey=trilogy";
+        let queryUrl = "http://www.omdbapi.com/?t=" + cb + "&y=&plot=short&apikey=trilogy";
 
         request(queryUrl, function(error, response, body)   {
 
@@ -166,4 +179,30 @@ function movieTime(){
 
 
     
-//Function for random shit
+//Function for random shit.txt
+
+function doSomethingRandom(){
+fs.readFile("random.txt", "utf8", function(error, data) {
+    
+    // If the code experiences any errors it will log the error to the console.
+    if (error) {
+      return console.log(error);
+    }
+  
+    // We will then turn the text into an argument to be passed in the command line
+    var dataArr = data.split(',');
+    if(dataArr.length==2){
+        picky(dataArr[0], dataArr[1]);
+    } else if(dataArr.length==1){
+        picky(dataArr[0]);
+    };
+
+    
+
+})};
+
+var runTheWholeThing = function(argOne, argTwo){
+    picky(argOne,argTwo)
+};
+
+runTheWholeThing(command, input);
